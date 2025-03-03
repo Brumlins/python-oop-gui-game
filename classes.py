@@ -41,13 +41,13 @@ class GameApp(tk.Tk):
         self.canvas.delete("all")
         for index, p in enumerate(self.players):
             self.canvas.create_rectangle(
-                p.x - p.size//2, p.y - p.size//2,
-                p.x + p.size//2, p.y + p.size//2,
+                p.x - p.size // 2, p.y - p.size // 2,
+                p.x + p.size // 2, p.y + p.size // 2,
                 fill=p.color, tags=f"player{index}"
             )
             self.canvas.create_rectangle(
-                p.x - p.size//2, p.y - p.size//2 - 20,
-                p.x + p.size//2, p.y - p.size//2 - 15,
+                p.x - p.size // 2, p.y - p.size // 2 - 20,
+                p.x + p.size // 2, p.y - p.size // 2 - 15,
                 fill="gray", tags=f"health{index}"
             )
         self.canvas.create_text(400, 50, text="Hra spuštěna", font=("Arial", 24), fill="black")
@@ -106,8 +106,8 @@ class GameApp(tk.Tk):
         }
         dx, dy = directions[shooter.direction]
         proj = Projectile(
-            shooter.x + dx * (shooter.size//2),
-            shooter.y + dy * (shooter.size//2),
+            shooter.x + dx * (shooter.size // 2),
+            shooter.y + dy * (shooter.size // 2),
             shooter.color,
             shooter.direction
         )
@@ -116,8 +116,8 @@ class GameApp(tk.Tk):
     def check_collision(self, projectile):
         for p in self.players:
             if p.color != projectile.color:
-                distance = sqrt((p.x - projectile.x)**2 + (p.y - projectile.y)**2)
-                if distance < p.size//2 + projectile.size:
+                distance = sqrt((p.x - projectile.x) ** 2 + (p.y - projectile.y) ** 2)
+                if distance < p.size // 2 + projectile.size:
                     return p
         return None
 
@@ -143,6 +143,8 @@ class GameApp(tk.Tk):
                     p.can_shoot = False
             else:
                 p.can_shoot = True
+            p.x = max(p.size // 2, min(p.x, 800 - p.size // 2))
+            p.y = max(p.size // 2, min(p.y, 600 - p.size // 2))
         for proj in self.projectiles[:]:
             directions = {
                 "left": (-1, 0),
@@ -160,7 +162,8 @@ class GameApp(tk.Tk):
                 if hit_player.health <= 0:
                     self.game_over(hit_player)
             if proj.x < 0 or proj.x > 800 or proj.y < 0 or proj.y > 600:
-                self.projectiles.remove(proj)
+                if proj in self.projectiles:
+                    self.projectiles.remove(proj)
         self._draw_players()
         self.after(30, self.game_loop)
 
@@ -169,3 +172,4 @@ class GameApp(tk.Tk):
         winner = next(p for p in self.players if p != loser)
         messagebox.showinfo("Konec hry", f"{winner.name} vyhrává!")
         self.destroy()
+
