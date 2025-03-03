@@ -23,7 +23,6 @@ class Projectile:
         self.speed = 10
         self.size = 5
 
-
 class GameApp(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -42,24 +41,22 @@ class GameApp(tk.Tk):
                 p.x + p.size//2, p.y + p.size//2,
                 fill=p.color, tags=f"player{index}"
             )
-
             self.canvas.create_rectangle(
                 p.x - p.size//2, p.y - p.size//2 - 20,
                 p.x + p.size//2, p.y - p.size//2 - 15,
                 fill="gray", tags=f"health{index}"
             )
 
+        self.canvas.create_text(400, 50, text="Hra spuštěna", font=("Arial", 24), fill="black")
+    
     def _bind_controls(self):
         self.bind("<KeyPress>", self.key_down)
         self.bind("<KeyRelease>", self.key_up)
-
-
+    
     def start_game(self):
         p1_name = self.p1_entry.get() or "Hráč 1"
         p2_name = self.p2_entry.get() or "Hráč 2"
         self.start_dialog.destroy()
-
-
         self.canvas = tk.Canvas(self, bg="lightgray")
         self.canvas.pack(fill=tk.BOTH, expand=True)
 
@@ -71,12 +68,12 @@ class GameApp(tk.Tk):
             p2_name, 700, 300, "red",
             {'left': 'Left', 'right': 'Right', 'up': 'Up', 'down': 'Down', 'shoot': 'Return'}
         ))
-        
+
         self._draw_players()
         self._bind_controls()
         self.game_active = True
         self.game_loop()
-
+    
     def _create_start_dialog(self):
         self.start_dialog = tk.Toplevel(self)
         self.start_dialog.title("Zadej jména hráčů")
@@ -84,9 +81,37 @@ class GameApp(tk.Tk):
         ttk.Label(self.start_dialog, text="Hráč 1 (WASD):").grid(row=0, padx=10, pady=5)
         self.p1_entry = ttk.Entry(self.start_dialog)
         self.p1_entry.grid(row=0, column=1, padx=10, pady=5)
-
+        
         ttk.Label(self.start_dialog, text="Hráč 2 (šipky):").grid(row=1, padx=10, pady=5)
         self.p2_entry = ttk.Entry(self.start_dialog)
         self.p2_entry.grid(row=1, column=1, padx=10, pady=5)
-
+        
         ttk.Button(self.start_dialog, text="Start hry", command=self.start_game).grid(row=2, columnspan=2, pady=10)
+    
+    def key_down(self, event):
+        if not self.game_active:
+            return
+        for p in self.players:
+            if event.keysym == p.keys['left']:
+                p.x -= p.speed
+                p.direction = "left"
+            elif event.keysym == p.keys['right']:
+                p.x += p.speed
+                p.direction = "right"
+            elif event.keysym == p.keys['up']:
+                p.y -= p.speed
+                p.direction = "up"
+            elif event.keysym == p.keys['down']:
+                p.y += p.speed
+                p.direction = "down"
+
+
+    def key_up(self, event):
+        pass
+
+    def game_loop(self):
+        if not self.game_active:
+            return
+        self._draw_players()
+        self.after(100, self.game_loop)
+
