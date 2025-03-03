@@ -33,9 +33,49 @@ class GameApp(tk.Tk):
         self.projectiles = []
         self.game_active = False
         self._create_start_dialog()
+    
+    def _draw_players(self):
+        self.canvas.delete("all")
+        for index, p in enumerate(self.players):
+            self.canvas.create_rectangle(
+                p.x - p.size//2, p.y - p.size//2,
+                p.x + p.size//2, p.y + p.size//2,
+                fill=p.color, tags=f"player{index}"
+            )
+
+            self.canvas.create_rectangle(
+                p.x - p.size//2, p.y - p.size//2 - 20,
+                p.x + p.size//2, p.y - p.size//2 - 15,
+                fill="gray", tags=f"health{index}"
+            )
+
+    def _bind_controls(self):
+        self.bind("<KeyPress>", self.key_down)
+        self.bind("<KeyRelease>", self.key_up)
+
 
     def start_game(self):
-        print("Zahajuji hru...")
+        p1_name = self.p1_entry.get() or "Hráč 1"
+        p2_name = self.p2_entry.get() or "Hráč 2"
+        self.start_dialog.destroy()
+
+
+        self.canvas = tk.Canvas(self, bg="lightgray")
+        self.canvas.pack(fill=tk.BOTH, expand=True)
+
+        self.players.append(Player(
+            p1_name, 100, 300, "blue",
+            {'left': 'a', 'right': 'd', 'up': 'w', 'down': 's', 'shoot': 'space'}
+        ))
+        self.players.append(Player(
+            p2_name, 700, 300, "red",
+            {'left': 'Left', 'right': 'Right', 'up': 'Up', 'down': 'Down', 'shoot': 'Return'}
+        ))
+        
+        self._draw_players()
+        self._bind_controls()
+        self.game_active = True
+        self.game_loop()
 
     def _create_start_dialog(self):
         self.start_dialog = tk.Toplevel(self)
