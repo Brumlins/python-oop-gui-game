@@ -5,6 +5,8 @@ from math import sqrt
 class Player:
     def __init__(self, name, x, y, color, keys):
         self.name = name
+        self.start_x = x
+        self.start_y = y
         self.x = x
         self.y = y
         self.color = color
@@ -13,6 +15,7 @@ class Player:
         self.speed = 5
         self.direction = "right"
         self.health = 100
+        self.lives = 3
         self.can_shoot = True
 
 class Projectile:
@@ -41,14 +44,31 @@ class GameApp(tk.Tk):
         self.canvas.delete("all")
         for index, p in enumerate(self.players):
             self.canvas.create_rectangle(
-                p.x - p.size // 2, p.y - p.size // 2,
-                p.x + p.size // 2, p.y + p.size // 2,
-                fill=p.color, tags=f"player{index}"
+                p.x - p.size//2, p.y - p.size//2,
+                p.x + p.size//2, p.y + p.size//2,
+                fill=p.color
             )
             self.canvas.create_rectangle(
-                p.x - p.size // 2, p.y - p.size // 2 - 20,
-                p.x + p.size // 2, p.y - p.size // 2 - 15,
-                fill="gray", tags=f"health{index}"
+                p.x - p.size//2, p.y - p.size//2 - 20,
+                p.x + p.size//2, p.y - p.size//2 - 15,
+                fill="gray"
+            )
+            self.canvas.create_rectangle(
+                p.x - p.size//2, p.y - p.size//2 - 20,
+                p.x - p.size//2 + (p.health // 2), p.y - p.size//2 - 15,
+                fill="green"
+            )
+            self.canvas.create_text(
+                p.x, p.y - p.size//2 - 30,
+                text=f"Životy: {p.lives}",
+                font=("Arial", 12),
+                fill="black"
+            )
+        for proj in self.projectiles:
+            self.canvas.create_oval(
+                proj.x - proj.size, proj.y - proj.size,
+                proj.x + proj.size, proj.y + proj.size,
+                fill=proj.color
             )
         self.canvas.create_text(400, 50, text="Hra spuštěna", font=("Arial", 24), fill="black")
 
@@ -160,7 +180,14 @@ class GameApp(tk.Tk):
                 hit_player.health -= 10
                 self.projectiles.remove(proj)
                 if hit_player.health <= 0:
-                    self.game_over(hit_player)
+                    hit_player.lives -= 1
+                    if hit_player.lives <= 0:
+                        self.game_over(hit_player)
+                        return
+                    else:
+                        hit_player.health = 100
+                        hit_player.x = hit_player.start_x
+                        hit_player.y = hit_player.start_y
             if proj.x < 0 or proj.x > 800 or proj.y < 0 or proj.y > 600:
                 if proj in self.projectiles:
                     self.projectiles.remove(proj)
